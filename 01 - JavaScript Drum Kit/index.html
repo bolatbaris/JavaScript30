@@ -57,30 +57,39 @@
     <audio data-key="76" src="sounds/tink.wav"></audio>
 
     <script>
+      const keys = Array.from(document.getElementsByClassName("key"))
+      const audioElements = Array.from(document.getElementsByTagName("audio"))
+
       const audioMap = new Map([])
       const keyElementMap = new Map([])
-
-      const audioElements = document.getElementsByTagName("audio")
-      const keyElements = document.getElementsByClassName("key")
 
       for (let audio of audioElements) {
         audioMap.set(+audio.dataset.key, audio)
       }
 
-      for (let keyElement of keyElements) {
+      for (let keyElement of keys) {
         keyElementMap.set(+keyElement.dataset.key, keyElement)
       }
 
-      document.onkeypress = function (e) {
-        audioMap.get(e.charCode)?.play()
-        const keyElement = keyElementMap.get(e.charCode)
-        if (keyElement) {
-          keyElement.classList.add("playing")
-          setTimeout(() => {
-            keyElement.classList.remove("playing")
-          }, 200)
-        }
+      function removeTransition(e) {
+        if (e.propertyName !== "transform") return
+        e.target.classList.remove("playing")
       }
+
+      function playSound(e) {
+        const audio = audioMap.get(e.keyCode)
+        const key = keyElementMap.get(e.keyCode)
+        if (!audio || !key) return
+
+        key.classList.add("playing")
+        audio.currentTime = 0
+        audio.play()
+      }
+
+      keys.forEach((key) =>
+        key.addEventListener("transitionend", removeTransition)
+      )
+      window.addEventListener("keydown", playSound)
     </script>
   </body>
 </html>
